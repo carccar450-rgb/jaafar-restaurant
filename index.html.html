@@ -1,0 +1,201 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <link rel="icon" href="icon.png" type="image/png">
+    <link rel="apple-touch-icon" href="icon.png">
+    <meta name="theme-color" content="#c0392b">
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>مطعم جعفر الخفاجي</title>
+    <style>
+        body { font-family: Arial, sans-serif; background: #fdfbf9; padding: 10px; direction: rtl; margin: 0; padding-bottom: 300px; }
+        .card { background: white; width: 100%; max-width: 500px; margin: auto; padding: 15px; border-radius: 20px; border: 2px solid #c0392b; }
+        .header { text-align: center; color: #c0392b; font-size: 24px; font-weight: bold; border-bottom: 3px solid #c0392b; padding-bottom: 10px; margin-bottom: 20px;}
+        .st { background: #2c3e50; color: white; padding: 12px; border-radius: 10px; margin: 25px 0 15px 0; font-size: 18px; border-right: 6px solid #f1c40f; text-align: center; display: flex; justify-content: center; align-items: center; gap: 10px;}
+        .row { background: #fff; border: 1px solid #eee; border-radius: 15px; padding: 12px; margin-bottom: 15px; box-shadow: 0 2px 5px rgba(0,0,0,0.05); }
+        .item-name { display: block; text-align: center; font-weight: bold; font-size: 17px; margin-bottom: 10px; color: #333; }
+        .ctrl { display: flex; justify-content: space-between; align-items: center; background: #fff5ed; padding: 10px; border-radius: 12px; }
+        .btn { border: none; width: 45px; height: 45px; border-radius: 10px; font-size: 24px; cursor: pointer; color: white; font-weight: bold; transition: 0.2s; }
+        .bp { background: #27ae60; } .bm { background: #e74c3c; }
+        .disp { text-align: center; flex-grow: 1; }
+        .wt { font-size: 14px; color: #555; display: block; font-weight: bold; }
+        .pt { font-size: 16px; color: #c0392b; font-weight: bold; }
+        .footer-fixed { position: fixed; bottom: 0; left: 0; right: 0; background: #2c3e50; color: white; padding: 15px; border-top: 4px solid #c0392b; z-index: 1000; max-width: 500px; margin: auto; }
+        #cart-text { font-size: 13px; color: #f1c40f; margin-bottom: 8px; max-height: 50px; overflow-y: auto; border-bottom: 1px solid #444; text-align: right; }
+        .total-line { font-size: 22px; font-weight: bold; display: flex; justify-content: space-between; margin-bottom: 10px; }
+        input { width: 100%; padding: 12px; margin: 8px 0; border: 1px solid #ddd; border-radius: 10px; text-align: right; box-sizing: border-box; font-size: 16px; }
+        .action-btns { display: flex; gap: 10px; flex-direction: column; }
+        .wa-btn { background: #25d366; color: white; border: none; width: 100%; padding: 15px; border-radius: 30px; font-size: 18px; font-weight: bold; cursor: pointer; text-decoration: none; text-align: center; }
+        .chat-btn { background: #075E54; color: white; border: none; width: 100%; padding: 15px; border-radius: 30px; font-size: 18px; font-weight: bold; cursor: pointer; text-decoration: none; text-align: center; display: block; line-height: 20px; }
+        .call-btn { background: #007bff; color: white; border: none; width: 100%; padding: 15px; border-radius: 30px; font-size: 18px; font-weight: bold; cursor: pointer; text-align: center; text-decoration: none; display: block; line-height: 20px; }
+    </style>
+</head>
+<body>
+
+<div class="card">
+    <div class="header">🍔 مطعم جعفر الخفاجي 🍕</div>
+    <div id="m-body"></div>
+    <input type="text" id="c-name" placeholder="اسم الزبون الكريم">
+    <input type="text" id="c-addr" placeholder="العنوان">
+    <input type="text" id="c-note" placeholder="ملاحظات الطلب">
+    
+    <div class="action-btns">
+        <button class="wa-btn" onclick="sendWA()">إرسال قائمة الطلبات ✅</button>
+        <a href="https://wa.me/9647750009420" class="chat-btn">دردشة واستفسار 💬</a>
+        <a href="tel:07750009420" class="call-btn">إتصال مباشر 📞</a>
+    </div>
+</div>
+
+<div class="footer-fixed">
+    <div id="cart-text">قائمة الطلبات: فارغة</div>
+    <div class="total-line"><span>المجموع:</span><span><span id="final-total">0</span> د.ع</span></div>
+</div>
+
+<script>
+function genList(suffix) {
+    let a = ["إختر"];
+    for(let i=1; i<=50; i++) a.push(i + " " + suffix);
+    return a;
+}
+
+// قمنا بإنشاء نوعين من القوائم: واحدة للقطع/الوجبات وأخرى للوزن
+var L = { 
+    P: genList("قطعة/وجبة"), 
+    W: genList("وزن") 
+};
+
+var items = [
+    // قسم المندي
+    { s: "🍛 قسم المندي", n: "مندي دجاجه كامله", p: 12000, t: "P" },
+    { s: "🍛 قسم المندي", n: "مندي نصف دجاجه", p: 6000, t: "P" },
+    { s: "🍛 قسم المندي", n: "مندي حنيذ دجاجه", p: 14000, t: "P" },
+    { s: "🍛 قسم المندي", n: "مندي حنيذ نصف دجاجه", p: 7000, t: "P" },
+    { s: "🍛 قسم المندي", n: "مندي مدفون دجاجه", p: 14000, t: "P" },
+    { s: "🍛 قسم المندي", n: "مندي مدفون نصف دجاجه", p: 7000, t: "P" },
+
+    // القسم الغربي
+    { s: "🌯 القسم الغربي", n: "صاج لحم عراقي", p: 4000, t: "P" },
+    { s: "🌯 القسم الغربي", n: "صاج دجاج", p: 3500, t: "P" },
+    { s: "🌯 القسم الغربي", n: "سندويش فلر", p: 3500, t: "P" },
+    { s: "🌯 القسم الغربي", n: "زنجر", p: 4000, t: "P" },
+    { s: "🌯 القسم الغربي", n: "تويستر", p: 3500, t: "P" },
+    { s: "🌯 القسم الغربي", n: "فاهيتا", p: 4000, t: "P" },
+    { s: "🌯 القسم الغربي", n: "فرانسكو", p: 4000, t: "P" },
+    { s: "🌯 القسم الغربي", n: "وجبة سكالوب 3 قطع", p: 7000, t: "P" },
+    { s: "🌯 القسم الغربي", n: "وجبة سكالوب 5 قطع", p: 12000, t: "P" },
+
+    // الشاورما (السندويتشات والوجبات)
+    { s: "🥙 الشاورما", n: "شاورما دجاج صمون حجري", p: 1500, t: "P" },
+    { s: "🥙 الشاورما", n: "شاورما لحم صمون حجري", p: 2500, t: "P" },
+    { s: "🥙 الشاورما", n: "سندويش شاورما دجاج شامي", p: 2500, t: "P" },
+    { s: "🥙 الشاورما", n: "سندويش شاورما لحم شامي", p: 3000, t: "P" },
+    { s: "🥙 الشاورما", n: "وجبة شاورما عربي دجاج", p: 3500, t: "P" },
+    { s: "🥙 الشاورما", n: "وجبة شاورما عربي لحم", p: 5000, t: "P" },
+    { s: "🥙 الشاورما", n: "وجبة عرايس دجاج", p: 5000, t: "P" },
+    { s: "🥙 الشاورما", n: "وجبة عرايس لحم", p: 6500, t: "P" },
+    
+    // شاورما (بالكيلو) - تم تغيير t إلى "W" لتظهر بكلمة "وزن"
+    { s: "⚖️ شاورما (بالكيلو)", n: "ربع كيلو شاورما لحم", p: 7500, t: "W" },
+    { s: "⚖️ شاورما (بالكيلو)", n: "نصف كيلو شاورما لحم", p: 15000, t: "W" },
+    { s: "⚖️ شاورما (بالكيلو)", n: "كيلو شاورما لحم", p: 30000, t: "W" },
+    { s: "⚖️ شاورما (بالكيلو)", n: "ربع كيلو شاورما دجاج", p: 6000, t: "W" },
+    { s: "⚖️ شاورما (بالكيلو)", n: "نصف كيلو شاورما دجاج", p: 12000, t: "W" },
+    { s: "⚖️ شاورما (بالكيلو)", n: "كيلو شاورما دجاج", p: 24000, t: "W" },
+
+    // البرغر
+    { s: "🍔 البرغر", n: "برغر كلاسيك", p: 4000, t: "P" },
+    { s: "🍔 البرغر", n: "برغر تشيز", p: 4500, t: "P" },
+    { s: "🍔 البرغر", n: "برغر كومندس دبل", p: 6000, t: "P" },
+    { s: "🍔 البرغر", n: "برغر مشروم", p: 5000, t: "P" },
+    { s: "🍔 البرغر", n: "برغر بغداد", p: 4000, t: "P" },
+    { s: "🍔 البرغر", n: "ستيك برغر جعفر الخفاجي", p: 8000, t: "P" },
+    { s: "🍔 البرغر", n: "برغر دجاج", p: 2500, t: "P" },
+    { s: "🍔 البرغر", n: "برغر دجاج بالجبن", p: 3000, t: "P" },
+
+    // البيتزا
+    { s: "🍕 البيتزا", n: "بيتزا لحم (وسط)", p: 7000, t: "P" },
+    { s: "🍕 البيتزا", n: "بيتزا لحم (كبير)", p: 10000, t: "P" },
+    { s: "🍕 البيتزا", n: "بيتزا دجاج (وسط)", p: 7000, t: "P" },
+    { s: "🍕 البيتزا", n: "بيتزا دجاج (كبير)", p: 10000, t: "P" },
+    { s: "🍕 البيتزا", n: "بيتزا مارغاريتا (وسط)", p: 5000, t: "P" },
+    { s: "🍕 البيتزا", n: "بيتزا مارغاريتا (كبير)", p: 7000, t: "P" },
+    { s: "🍕 البيتزا", n: "بيتزا مشكل (وسط)", p: 7000, t: "P" },
+    { s: "🍕 البيتزا", n: "بيتزا مشكل (كبير)", p: 10000, t: "P" },
+    { s: "🍕 البيتزا", n: "بيتزا خضار (وسط)", p: 6000, t: "P" },
+    { s: "🍕 البيتزا", n: "بيتزا خضار (كبير)", p: 8000, t: "P" },
+    { s: "🍕 البيتزا", n: "بيتزا كرسبي (وسط)", p: 7000, t: "P" },
+    { s: "🍕 البيتزا", n: "بيتزا كرسبي (كبير)", p: 10000, t: "P" },
+    { s: "🍕 البيتزا", n: "بيتزا لحم مفروم (وسط)", p: 7000, t: "P" },
+    { s: "🍕 البيتزا", n: "بيتزا لحم مفروم (كبير)", p: 10000, t: "P" },
+    { s: "🍕 البيتزا", n: "بيتزا بيبروني (وسط)", p: 7000, t: "P" },
+    { s: "🍕 البيتزا", n: "بيتزا بيبروني (كبير)", p: 10000, t: "P" },
+    { s: "🍕 البيتزا", n: "بيتزا الفصول الأربعة (وسط)", p: 7000, t: "P" },
+    { s: "🍕 البيتزا", n: "بيتزا الفصول الأربعة (كبير)", p: 10000, t: "P" },
+
+    // لحم بعجين
+    { s: "🫓 لحم بعجين", n: "لحم بعجين (وسط)", p: 3000, t: "P" },
+    { s: "🫓 لحم بعجين", n: "لحم بعجين (كبير)", p: 4000, t: "P" },
+    { s: "🫓 لحم بعجين", n: "لحم بعجين بالجبن (وسط)", p: 3500, t: "P" },
+    { s: "🫓 لحم بعجين", n: "لحم بعجين بالجبن (كبير)", p: 4500, t: "P" },
+    { s: "🫓 لحم بعجين", n: "لحم بعجين بالبيض (وسط)", p: 3500, t: "P" },
+    { s: "🫓 لحم بعجين", n: "لحم بعجين بالبيض (كبير)", p: 4500, t: "P" },
+    { s: "🫓 لحم بعجين", n: "لحم بعجين بيض وجبن (وسط)", p: 4000, t: "P" },
+    { s: "🫓 لحم بعجين", n: "لحم بعجين بيض وجبن (كبير)", p: 5000, t: "P" },
+
+    // الفنكر والمقبلات
+    { s: "🍟 الفنكر", n: "فنكر", p: 2000, t: "P" },
+    { s: "🍟 الفنكر", n: "فنكر تشيز", p: 3000, t: "P" },
+    { s: "🍟 الفنكر", n: "وجبة حلقات بصل", p: 3000, t: "P" },
+    { s: "🥗 المقبلات", n: "مقبلات صغير", p: 1500, t: "P" },
+    { s: "🥗 المقبلات", n: "مقبلات وسط", p: 2500, t: "P" },
+    { s: "🥗 المقبلات", n: "مقبلات كبير", p: 4000, t: "P" },
+
+    // الريزو
+    { s: "🍚 الريزو", n: "ريزو ستربس", p: 5000, t: "P" },
+    { s: "🍚 الريزو", n: "ريزو ستربس بالجبن", p: 6000, t: "P" },
+    { s: "🍚 الريزو", n: "ريزو ستربس سبايسي", p: 5000, t: "P" },
+    { s: "🍚 الريزو", n: "ريزو ستربس مدخن", p: 5000, t: "P" },
+    { s: "🍚 الريزو", n: "ريزو شاورما لحم", p: 5000, t: "P" },
+    { s: "🍚 الريزو", n: "ريزو شاورما دجاج", p: 5000, t: "P" }
+];
+
+var cart = {};
+
+function calc(i, q) {
+    if (q === 0) return 0;
+    return q * items[i].p;
+}
+
+function start() {
+    let h = ""; let lastS = "";
+    items.forEach((it, i) => {
+        if (it.s !== lastS) { h += '<div class="st">' + it.s + '</div>'; lastS = it.s; }
+        let q = cart[i] || 0;
+        let txt = L[it.t][q];
+        let pr = (q === 0) ? it.p : calc(i, q);
+        h += '<div class="row"><span class="item-name">'+it.n+'</span><div class="ctrl"><button class="btn bp" onclick="up('+i+',1)">+</button><div class="disp"><span class="wt">'+txt+'</span><span class="pt">'+pr.toLocaleString()+' د.ع</span></div><button class="btn bm" onclick="up('+i+',-1)">-</button></div></div>';
+    });
+    document.getElementById('m-body').innerHTML = h;
+    update();
+}
+
+function up(i, v) { if ( (cart[i]||0)+v >= 0 && (cart[i]||0)+v < L[items[i].t].length) { cart[i] = (cart[i]||0)+v; start(); } }
+
+function update() {
+    let t = 0; let list = [];
+    items.forEach((it, i) => { if (cart[i] > 0) { t += calc(i, cart[i]); list.push(it.n + " (" + L[it.t][cart[i]] + ")"); } });
+    document.getElementById('final-total').innerText = t.toLocaleString();
+    document.getElementById('cart-text').innerText = list.length ? list.join(" | ") : "قائمة الطلبات: فارغة";
+}
+
+function sendWA() {
+    let n = document.getElementById('c-name').value, a = document.getElementById('c-addr').value, nt = document.getElementById('c-note').value;
+    if (!n || !a) return alert("يرجى إكمال البيانات (الاسم والعنوان)");
+    let msg = `*طلب جديد من مطعم جعفر الخفاجي*\n👤 الاسم: ${n}\n📍 العنوان: ${a}\n📝 ملاحظات: ${nt}\n\n🍴 الطلبات:\n`;
+    items.forEach((it, i) => { if (cart[i] > 0) msg += `- ${it.n} (${L[it.t][cart[i]]})\n`; });
+    window.open("https://wa.me/9647750009420?text=" + encodeURIComponent(msg + "\n💰 المجموع: " + document.getElementById('final-total').innerText + " د.ع"));
+}
+window.onload = start;
+</script>
+</body>
+</html>
